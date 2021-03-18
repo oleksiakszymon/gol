@@ -1,10 +1,10 @@
 import "./App.css";
-import Grid from "./Grid";
+import AppLogic from "./AppLogic";
 
 function App() {
     return (
         <div className="App">
-            <Grid />
+            <AppLogic />
         </div>
     );
 }
