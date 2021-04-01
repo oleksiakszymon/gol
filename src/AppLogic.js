@@ -1,41 +1,24 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import "./App.css";
 import NextStepButton from "./NextStepButton";
 import SpeedButtons from "./SpeedButtons";
 import StartStopButton from "./StartStopButton";
 import Table from "./Table";
+import { useSelector, useDispatch } from "react-redux";
+import { replaceData } from "./actions";
+import { startInterval, stopInterval } from "./actions";
 
-const createArray = (rowsAmount, collumnsAmount) => {
-    //Initialize 2D array
-    let array = new Array(rowsAmount);
-    for (let i = 0; i < array.length; i++) {
-        array[i] = new Array(collumnsAmount);
-    }
-    //Fill with false
-    for (let i = 0; i < rowsAmount; i++) {
-        for (let j = 0; j < collumnsAmount; j++) {
-            array[i][j] = { isAlive: false, isNew: false };
-        }
-    }
-    return array;
-};
 const rowsAmount = 48;
 const collumnsAmount = 96;
+
 export default function AppLogic() {
-    const [cellDataState, setCellDataState] = useState(
-        createArray(rowsAmount, collumnsAmount)
-    );
-    const [playInterval, setPlayInterval] = useState(null);
-    const [tickSpeed, setTickSpeed] = useState(1000);
+    const dispatch = useDispatch();
+    const cellDataState = useSelector((state) => state.cellDataReducer);
+    const tickSpeed = useSelector((state) => state.tickSpeedReducer);
+    const playInterval = useSelector((state) => state.playIntervalReducer);
+
     const initialRender = useRef(true);
-    function toggleAlive(row, collumn) {
-        let cellData = { ...cellDataState };
-        cellData[row][collumn].isAlive = !cellData[row][collumn].isAlive;
-        if (cellData[row][collumn].isAlive) {
-            cellData[row][collumn].isNew = true;
-        }
-        setCellDataState(cellData);
-    }
+
     const neightboursAmountCounter = (x, y) => {
         let counter = 0;
         let copyX = x;
@@ -115,15 +98,14 @@ export default function AppLogic() {
                 }
             }
         }
-        setCellDataState(cellData);
+        dispatch(replaceData(cellData));
     };
 
     function togglePlay() {
         if (!playInterval) {
-            setPlayInterval(setInterval(oneTick, tickSpeed));
+            dispatch(startInterval(oneTick, tickSpeed));
         } else {
-            clearInterval(playInterval);
-            setPlayInterval(null);
+            dispatch(stopInterval());
         }
     }
     useEffect(() => {
@@ -131,31 +113,20 @@ export default function AppLogic() {
             initialRender.current = false;
         } else {
             if (playInterval !== null) {
-                clearInterval(playInterval);
-                setPlayInterval(setInterval(oneTick, tickSpeed));
+                dispatch(stopInterval());
+                dispatch(startInterval(oneTick, tickSpeed));
             }
         }
     }, [tickSpeed]);
     return (
         <>
             <div className="nav-bar">
-                <StartStopButton
-                    startStopFunction={togglePlay}
-                    isStarted={playInterval}
-                />
+                <StartStopButton startStopFunction={togglePlay} />
                 <NextStepButton nextStepFunction={oneTick} />
                 <div id="title">GAME OF LIFE</div>
-                <SpeedButtons
-                    currentSpeed={tickSpeed}
-                    changeSpeed={setTickSpeed}
-                />
+                <SpeedButtons />
             </div>
-            <Table
-                rowsAmount={rowsAmount}
-                collumnsAmount={collumnsAmount}
-                cellData={cellDataState}
-                toggleAlive={toggleAlive}
-            />
+            <Table rowsAmount={rowsAmount} collumnsAmount={collumnsAmount} />
         </>
     );
 }

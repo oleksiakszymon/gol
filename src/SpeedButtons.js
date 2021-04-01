@@ -1,17 +1,20 @@
 import "./App.css";
 import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { incrementByAmount, decrementByAmount } from "./actions";
 
-export default function SpeedButtons(props) {
-    const { currentSpeed, changeSpeed } = props;
+export default function SpeedButtons() {
+    const currentSpeed = useSelector((state) => state.tickSpeedReducer);
+    const dispatch = useDispatch();
 
     function increaseSpeed() {
         if (currentSpeed < 5000) {
-            changeSpeed(currentSpeed + 100);
+            dispatch(incrementByAmount(100));
         }
     }
     function decreaseSpeed() {
         if (currentSpeed > 100) {
-            changeSpeed(currentSpeed - 100);
+            dispatch(decrementByAmount(100));
         }
     }
 
