@@ -1,5 +1,5 @@
 import "./App.css";
-import AppLogic from "./AppLogic";
+import AppLogic from "./mainLogic/AppLogic";
 
 function App() {
     return (

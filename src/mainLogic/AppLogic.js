@@ -1,24 +1,39 @@
 import React, { useEffect, useRef } from "react";
-import "./App.css";
-import NextStepButton from "./NextStepButton";
-import SpeedButtons from "./SpeedButtons";
-import StartStopButton from "./StartStopButton";
-import Table from "./Table";
+import "../App.css";
+import NextStepButton from "../playControl/NextStepButton";
+import SpeedButtons from "../speedControl/SpeedButtons";
+import StartStopButton from "../playControl/StartStopButton";
+import Table from "../Table/Table";
 import { useSelector, useDispatch } from "react-redux";
-import { replaceData } from "./actions";
-import { startInterval, stopInterval } from "./actions";
-
-const rowsAmount = 48;
-const collumnsAmount = 96;
+import {
+    initializeArray,
+    replaceData,
+    resizeData,
+} from "../cellDataControl/cellDataActions";
+import { getCollumnsAmount, getRowsAmount } from "../sizeControl/sizeActions";
 
 export default function AppLogic() {
     const dispatch = useDispatch();
+    const initialRender = useRef(true);
+    const collumnsAmount = useSelector((state) => state.collumnsAmountReducer);
+    const rowsAmount = useSelector((state) => state.rowsAmountReducer);
+    if (initialRender.current) {
+        dispatch(getRowsAmount());
+        dispatch(getCollumnsAmount());
+        dispatch(initializeArray(collumnsAmount, rowsAmount));
+    }
+
     const cellDataState = useSelector((state) => state.cellDataReducer);
     const tickSpeed = useSelector((state) => state.tickSpeedReducer);
-    const playInterval = useSelector((state) => state.playIntervalReducer);
+    const isPlaying = useSelector((state) => state.isPlayingReducer);
 
-    const initialRender = useRef(true);
-
+    window.addEventListener("resize", () => {
+        dispatch(getRowsAmount());
+        dispatch(getCollumnsAmount());
+    });
+    useEffect(() => {
+        dispatch(resizeData(collumnsAmount, rowsAmount));
+    }, [collumnsAmount, rowsAmount]);
     const neightboursAmountCounter = (x, y) => {
         let counter = 0;
         let copyX = x;
@@ -70,9 +85,10 @@ export default function AppLogic() {
         let cellData = { ...cellDataState };
         //Creating array of neightbours amount for every cell
         let neightboursAmountTable = new Array(rowsAmount);
-        for (let i = 0; i < 48; i++) {
+        for (let i = 0; i < rowsAmount; i++) {
             neightboursAmountTable[i] = new Array(collumnsAmount);
         }
+        console.log(neightboursAmountTable);
         for (let i = 0; i < rowsAmount; i++) {
             for (let j = 0; j < collumnsAmount; j++) {
                 neightboursAmountTable[i][j] = neightboursAmountCounter(i, j);
@@ -101,32 +117,34 @@ export default function AppLogic() {
         dispatch(replaceData(cellData));
     };
 
-    function togglePlay() {
-        if (!playInterval) {
-            dispatch(startInterval(oneTick, tickSpeed));
+    let intervalId = useRef(null);
+    useEffect(() => {
+        if (isPlaying) {
+            intervalId.current = setInterval(oneTick, tickSpeed);
         } else {
-            dispatch(stopInterval());
+            clearInterval(intervalId.current);
         }
-    }
+    }, [isPlaying]);
+
     useEffect(() => {
         if (initialRender.current) {
             initialRender.current = false;
         } else {
-            if (playInterval !== null) {
-                dispatch(stopInterval());
-                dispatch(startInterval(oneTick, tickSpeed));
+            if (isPlaying) {
+                clearInterval(intervalId.current);
+                intervalId.current = setInterval(oneTick, tickSpeed);
             }
         }
     }, [tickSpeed]);
     return (
         <>
             <div className="nav-bar">
-                <StartStopButton startStopFunction={togglePlay} />
+                <StartStopButton />
                 <NextStepButton nextStepFunction={oneTick} />
                 <div id="title">GAME OF LIFE</div>
                 <SpeedButtons />
             </div>
-            <Table rowsAmount={rowsAmount} collumnsAmount={collumnsAmount} />
+            <Table />
         </>
     );
 }

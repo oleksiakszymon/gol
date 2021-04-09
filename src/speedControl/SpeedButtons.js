@@ -1,7 +1,10 @@
-import "./App.css";
+import "../App.css";
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { incrementByAmount, decrementByAmount } from "./actions";
+import {
+    incrementByAmount,
+    decrementByAmount,
+} from "../speedControl/tickSpeedActions";
 
 export default function SpeedButtons() {
     const currentSpeed = useSelector((state) => state.tickSpeedReducer);

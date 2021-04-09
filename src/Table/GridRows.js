@@ -1,9 +1,11 @@
 import React from "react";
-import "./App.css";
+import "../App.css";
 import Cell from "./Cell";
+import { useSelector } from "react-redux";
 
 export default function GridRows(props) {
-    const { row, collumnsAmount, toggleAlive } = props;
+    const { row, toggleAlive } = props;
+    const collumnsAmount = useSelector((state) => state.collumnsAmountReducer);
 
     const generateRows = () => {
         let rowsTable = [];

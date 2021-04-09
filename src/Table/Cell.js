@@ -1,8 +1,8 @@
 import React from "react";
-import "./App.css";
+import "../App.css";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { replaceData } from "./actions";
+import { replaceData } from "../cellDataControl/cellDataActions";
 
 export default function Cell(props) {
     const { row, collumn } = props;
@@ -22,11 +22,13 @@ export default function Cell(props) {
         <td
             onClick={() => toggleAlive(row, collumn)}
             className={
-                cellDataState[row][collumn].isAlive
-                    ? cellDataState[row][collumn].isNew
-                        ? "changed-cell"
-                        : "alive-cell"
-                    : "death-cell"
+                cellDataState[row][collumn]
+                    ? cellDataState[row][collumn].isAlive
+                        ? cellDataState[row][collumn].isNew
+                            ? "changed-cell"
+                            : "alive-cell"
+                        : "death-cell"
+                    : "undefined-cell"
             }
             id={row.toString() + collumn}
         ></td>
